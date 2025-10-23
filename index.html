@@ -1,0 +1,127 @@
+<h1>Hello, Live Server!</h1><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quadratic Solver & Grader</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    h1, h2 { color: #333; }
+    .section { margin-bottom: 2em; }
+    label { display: block; margin-top: 0.5em; }
+    input[type="number"] { width: 100px; }
+    .error { color: red; }
+    .result { margin-top: 1em; font-weight: bold; }
+    button { margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Quadratic Equation Solver & Grade Converter</h1>
+  <p>Enter values to solve a quadratic equation or convert a score to a grade.</p>
+
+  <div class="section" id="quadratic-section">
+    <h2>Quadratic Solver</h2>
+    <label>a: <input type="number" id="a" /></label>
+    <label>b: <input type="number" id="b" /></label>
+    <label>c: <input type="number" id="c" /></label>
+    <div class="error" id="quad-error"></div>
+    <button onclick="solveQuadratic()">Compute</button>
+    <button onclick="resetQuadratic()">Reset</button>
+    <div class="result" id="quad-result"></div>
+  </div>
+
+  <div class="section" id="grading-section">
+    <h2>Grade Converter</h2>
+    <label>Score (0-100): <input type="number" id="score" /></label>
+    <div class="error" id="grade-error"></div>
+    <button onclick="convertGrade()">Compute</button>
+    <button onclick="resetGrade()">Reset</button>
+    <div class="result" id="grade-result"></div>
+  </div>
+
+  <script>
+    function solveQuadratic() {
+      const a = parseFloat(document.getElementById('a').value);
+      const b = parseFloat(document.getElementById('b').value);
+      const c = parseFloat(document.getElementById('c').value);
+      const error = document.getElementById('quad-error');
+      const result = document.getElementById('quad-result');
+      error.textContent = '';
+      result.textContent = '';
+
+      if (isNaN(a) || isNaN(b) || isNaN(c)) {
+        error.textContent = 'Please enter valid numbers for a, b, and c.';
+        return;
+      }
+      if (a === 0) {
+        error.textContent = 'Coefficient a must not be zero.';
+        return;
+      }
+
+      const D = b * b - 4 * a * c;
+      let nature = '';
+      let roots = '';
+
+      if (D > 0) {
+        const r1 = (-b + Math.sqrt(D)) / (2 * a);
+        const r2 = (-b - Math.sqrt(D)) / (2 * a);
+        nature = 'Two distinct real roots';
+        roots = `x₁ = ${r1.toFixed(2)}, x₂ = ${r2.toFixed(2)}`;
+      } else if (D === 0) {
+        const r = -b / (2 * a);
+        nature = 'One real repeated root';
+        roots = `x = ${r.toFixed(2)}`;
+      } else {
+        const real = (-b / (2 * a)).toFixed(2);
+        const imag = (Math.sqrt(-D) / (2 * a)).toFixed(2);
+        nature = 'Two complex conjugate roots';
+        roots = `x₁ = ${real} + ${imag}i, x₂ = ${real} - ${imag}i`;
+      }
+
+      result.innerHTML = `
+        Discriminant (D): ${D.toFixed(2)}<br/>
+        Nature of roots: ${nature}<br/>
+        Roots: ${roots}
+      `;
+    }
+
+    function resetQuadratic() {
+      document.getElementById('a').value = '';
+      document.getElementById('b').value = '';
+      document.getElementById('c').value = '';
+      document.getElementById('quad-error').textContent = '';
+      document.getElementById('quad-result').textContent = '';
+    }
+
+    function convertGrade() {
+      const score = parseInt(document.getElementById('score').value);
+      const error = document.getElementById('grade-error');
+      const result = document.getElementById('grade-result');
+      error.textContent = '';
+      result.textContent = '';
+
+      if (isNaN(score) || score < 0 || score > 100) {
+        error.textContent = 'Please enter a score between 0 and 100.';
+        return;
+      }
+
+      let grade = '';
+      if (score >= 85) grade = 'A+';
+      else if (score >= 75) grade = 'A';
+      else if (score >= 65) grade = 'B+';
+      else if (score >= 60) grade = 'B';
+      else if (score >= 55) grade = 'C+';
+      else if (score >= 50) grade = 'C';
+      else grade = 'D';
+
+      result.textContent = `Score ${score} → Grade ${grade}`;
+    }
+
+    function resetGrade() {
+      document.getElementById('score').value = '';
+      document.getElementById('grade-error').textContent = '';
+      document.getElementById('grade-result').textContent = '';
+    }
+  </script>
+</body>
+</html>
