@@ -1,0 +1,136 @@
+import java.util.*;
+
+/**
+ * InfixConverter.java
+ * Converts an infix expression to both Postfix and Prefix notation.
+ * Uses a Stack-based Shunting Yard Algorithm.
+ */
+public class InfixConverter {
+
+    // ─────────────────────────────────────────────
+    // Returns operator precedence level
+    // ─────────────────────────────────────────────
+    static int precedence(char op) {
+        switch (op) {
+            case '+': case '-': return 1;
+            case '*': case '/': return 2;
+            case '^':           return 3;
+            default:            return 0;
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // INFIX → POSTFIX  (Shunting Yard Algorithm)
+    // ─────────────────────────────────────────────
+    public static String toPostfix(String infix) {
+        StringBuilder output = new StringBuilder();
+        Deque<Character> stack = new ArrayDeque<>();
+
+        for (char ch : infix.toCharArray()) {
+            if (ch == ' ') continue;
+
+            if (Character.isLetterOrDigit(ch)) {
+                // Operand: send straight to output
+                output.append(ch).append(' ');
+
+            } else if (ch == '(') {
+                // Left parenthesis: push onto stack
+                stack.push(ch);
+
+            } else if (ch == ')') {
+                // Right parenthesis: pop until matching '('
+                while (!stack.isEmpty() && stack.peek() != '(') {
+                    output.append(stack.pop()).append(' ');
+                }
+                if (!stack.isEmpty()) stack.pop(); // discard '('
+
+            } else {
+                // Operator: pop higher/equal precedence ops first
+                while (!stack.isEmpty()
+                        && stack.peek() != '('
+                        && precedence(stack.peek()) >= precedence(ch)) {
+                    output.append(stack.pop()).append(' ');
+                }
+                stack.push(ch);
+            }
+        }
+
+        // Drain remaining operators
+        while (!stack.isEmpty()) {
+            output.append(stack.pop()).append(' ');
+        }
+
+        return output.toString().trim();
+    }
+
+    // ─────────────────────────────────────────────
+    // INFIX → PREFIX
+    // Strategy: reverse infix → apply postfix → reverse result
+    // ─────────────────────────────────────────────
+    public static String toPrefix(String infix) {
+        // Step 1 – Reverse expression and swap brackets
+        StringBuilder reversed = new StringBuilder();
+        for (int i = infix.length() - 1; i >= 0; i--) {
+            char ch = infix.charAt(i);
+            if      (ch == '(') reversed.append(')');
+            else if (ch == ')') reversed.append('(');
+            else                reversed.append(ch);
+        }
+
+        // Step 2 – Apply postfix algorithm on reversed string
+        String postfixOfReversed = toPostfix(reversed.toString());
+
+        // Step 3 – Reverse that result to get prefix
+        String[] tokens = postfixOfReversed.split(" ");
+        StringBuilder prefix = new StringBuilder();
+        for (int i = tokens.length - 1; i >= 0; i--) {
+            prefix.append(tokens[i]);
+            if (i > 0) prefix.append(' ');
+        }
+
+        return prefix.toString();
+    }
+
+    // ─────────────────────────────────────────────
+    // MAIN – demo with several test cases
+    // ─────────────────────────────────────────────
+    public static void main(String[] args) {
+        String[] expressions = {
+            "A+B",
+            "A+B*C",
+            "(A+B)*C",
+            "A+B*C-D/E",
+            "(A+B)*(C-D)",
+            "A*(B+C)-D/(E+F)"
+        };
+
+        System.out.println("╔══════════════════════════════════════════════════════════════╗");
+        System.out.println("║            INFIX  →  POSTFIX  &  PREFIX  CONVERTER          ║");
+        System.out.println("╚══════════════════════════════════════════════════════════════╝");
+        System.out.printf("%-25s %-25s %-25s%n", "INFIX", "POSTFIX", "PREFIX");
+        System.out.println("─".repeat(75));
+
+        for (String expr : expressions) {
+            String postfix = toPostfix(expr);
+            String prefix  = toPrefix(expr);
+            System.out.printf("%-25s %-25s %-25s%n", expr, postfix, prefix);
+        }
+
+        System.out.println("─".repeat(75));
+
+        // Interactive scanner
+        Scanner sc = new Scanner(System.in);
+        System.out.print("\nEnter your own infix expression (or 'quit'): ");
+        while (sc.hasNextLine()) {
+            String line = sc.nextLine().trim();
+            if (line.equalsIgnoreCase("quit")) break;
+            if (!line.isEmpty()) {
+                System.out.println("  Postfix : " + toPostfix(line));
+                System.out.println("  Prefix  : " + toPrefix(line));
+            }
+            System.out.print("Enter expression (or 'quit'): ");
+        }
+        sc.close();
+        System.out.println("Goodbye!");
+    }
+}
